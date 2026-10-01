@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fazenda Feliz</title>
+  <style>
+    :root {
+      --verde-escuro: #1f5d2c;
+      --verde: #3f8f3f;
+      --verde-claro: #dff5d6;
+      --verde-agua: #c7f0d7;
+      --amarelo: #ffd857;
+      --laranja: #ff8c42;
+      --texto: #20311b;
+      --branco: #ffffff;
+      --cinza: #eef2ee;
+      --vermelho: #d9534f;
+      --sombra: rgba(0, 0, 0, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #87d6ff 0%, #dff9ff 25%, #c8f0b7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--texto);
+    }
+
+    .container {
+      width: min(100%, 440px);
+      background: rgba(255,255,255,0.9);
+      border-radius: 24px;
+      box-shadow: 0 24px 40px var(--sombra);
+      padding: 28px 24px;
+      border: 2px solid rgba(255,255,255,0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .logo-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .logo h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      color: var(--verde-escuro);
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--cinza);
+      border-radius: 12px;
+      padding: 6px;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--texto);
+    }
+
+    .tab.active {
+      background: var(--branco);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      color: var(--verde-escuro);
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .mode-box,
+    .info-box {
+      background: linear-gradient(180deg, #eef9ec, #ebf7e7);
+      border: 2px solid #a9d79b;
+      border-radius: 14px;
+      padding: 14px 12px;
+      margin-bottom: 18px;
+    }
+
+    .mode-title {
+      text-align: center;
+      font-weight: 700;
+      color: var(--verde-escuro);
+      margin-bottom: 12px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      border: 2px solid #cdd9cc;
+      background: white;
+      border-radius: 10px;
+      padding: 12px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .mode-btn.selected {
+      border-color: var(--verde);
+      background: #edf9ed;
+      color: var(--verde-escuro);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #dfe7df;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--verde);
+      box-shadow: 0 0 0 4px rgba(63,143,63,0.12);
+    }
+
+    .button {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(180deg, var(--verde), var(--verde-escuro));
+      color: var(--branco);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 14px 16px;
+      cursor: pointer;
+      box-shadow: 0 10px 18px rgba(31,93,44,0.2);
+    }
+
+    .error {
+      color: var(--vermelho);
+      font-size: 0.8rem;
+      margin-top: 6px;
+      min-height: 16px;
+      display: block;
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 22px 18px; }
+      .mode-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <h1>Fazenda Feliz</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="login">Entrar</button>
+      <button class="tab" data-tab="cadastro">Cadastro</button>
+    </div>
+
+    <div id="login" class="panel active">
+      <div class="mode-box">
+        <div class="mode-title">Escolha o modo</div>
+        <div class="mode-grid">
+          <button type="button" class="mode-btn selected" data-mode="real">💰 Real</button>
+          <button type="button" class="mode-btn" data-mode="infantil">🎨 Infantil</button>
+        </div>
+      </div>
+
+      <div id="modoInfo" class="info-box">💰 Modo real: jogue, ganhe moedas e valide ganhos com conta segura.</div>
+
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" placeholder="seu@email.com" />
+        <span class="error" id="loginEmailError"></span>
+      </div>
+
+      <div class="field">
+        <label for="loginSenha">Senha</label>
+        <input id="loginSenha" type="password" placeholder="Sua senha" />
+        <span class="error" id="loginSenhaError"></span>
+      </div>
+
+      <button class="button" onclick="entrar()">🎮 Entrar no jogo</button>
+    </div>
+
+    <div id="cadastro" class="panel">
+      <div class="info-box">✨ Crie sua conta e comece sua fazenda.</div>
+
+      <div class="field">
+        <label for="cadNome">Nome</label>
+        <input id="cadNome" type="text" placeholder="Seu nome" />
+        <span class="error" id="cadNomeError"></span>
+      </div>
+
+      <div class="field">
+        <label for="cadEmail">Email</label>
+        <input id="cadEmail" type="email" placeholder="seu@email.com" />
+        <span class="error" id="cadEmailError"></span>
+      </div>
+
+      <div class="field">
+        <label for="cadSenha">Senha</label>
+        <input id="cadSenha" type="password" placeholder="Mínimo 8 caracteres" />
+        <span class="error" id="cadSenhaError"></span>
+      </div>
+
+      <div class="field">
+        <label for="cadConfirm">Confirmar senha</label>
+        <input id="cadConfirm" type="password" placeholder="Repita a senha" />
+        <span class="error" id="cadConfirmError"></span>
+      </div>
+
+      <button class="button" onclick="cadastrar()">✅ Criar conta</button>
+    </div>
+  </div>
+
+  <script>
+    let modoSelecionado = 'real';
+
+    document.querySelectorAll('.tab').forEach((button) => {
+      button.addEventListener('click', () => {
+        const tab = button.dataset.tab;
+        document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === button));
+        document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('active', panel.id === tab));
+      });
+    });
+
+    document.querySelectorAll('.mode-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        modoSelecionado = button.dataset.mode;
+        document.querySelectorAll('.mode-btn').forEach((btn) => btn.classList.toggle('selected', btn === button));
+        const info = document.getElementById('modoInfo');
+        info.textContent = modoSelecionado === 'real'
+          ? '💰 Modo real: jogue, ganhe moedas e valide ganhos com conta segura.'
+          : '🎨 Modo infantil: foco em diversão, sem valor financeiro real.';
+      });
+    });
+
+    function limparErros() {
+      document.querySelectorAll('.error').forEach((el) => el.textContent = '');
+    }
+
+    function entrar() {
+      limparErros();
+      const email = document.getElementById('loginEmail').value.trim();
+      const senha = document.getElementById('loginSenha').value.trim();
+
+      if (!email) {
+        document.getElementById('loginEmailError').textContent = 'Informe o email.';
+        return;
+      }
+      if (!senha) {
+        document.getElementById('loginSenhaError').textContent = 'Informe a senha.';
+        return;
+      }
+
+      const usuarios = JSON.parse(localStorage.getItem('fazendaUsuarios') || '{}');
+      const usuario = usuarios[email];
+
+      if (!usuario || usuario.senha !== senha) {
+        document.getElementById('loginSenhaError').textContent = 'Email ou senha inválidos.';
+        return;
+      }
+
+      localStorage.setItem('usuarioLogado', email);
+      localStorage.setItem('modoJogo', modoSelecionado);
+      window.location.href = 'jogo.html';
+    }
+
+    function cadastrar() {
+      limparErros();
+      const nome = document.getElementById('cadNome').value.trim();
+      const email = document.getElementById('cadEmail').value.trim();
+      const senha = document.getElementById('cadSenha').value.trim();
+      const confirm = document.getElementById('cadConfirm').value.trim();
+
+      if (!nome) {
+        document.getElementById('cadNomeError').textContent = 'Informe o nome.';
+        return;
+      }
+      if (!email) {
+        document.getElementById('cadEmailError').textContent = 'Informe o email.';
+        return;
+      }
+      if (senha.length < 8) {
+        document.getElementById('cadSenhaError').textContent = 'A senha deve ter pelo menos 8 caracteres.';
+        return;
+      }
+      if (senha !== confirm) {
+        document.getElementById('cadConfirmError').textContent = 'As senhas devem ser iguais.';
+        return;
+      }
+
+      const usuarios = JSON.parse(localStorage.getItem('fazendaUsuarios') || '{}');
+      if (usuarios[email]) {
+        document.getElementById('cadEmailError').textContent = 'Este email já está cadastrado.';
+        return;
+      }
+
+      usuarios[email] = {
+        nome,
+        email,
+        senha,
+        moedas: 100,
+        nivel: 1,
+        xp: 0,
+        modo: modoSelecionado,
+        terrenos: {
+          1: { estado: 'vazio', planta: null },
+          2: { estado: 'vazio', planta: null },
+          3: { estado: 'vazio', planta: null },
+          4: { estado: 'vazio', planta: null }
+        }
+      };
+
+      localStorage.setItem('fazendaUsuarios', JSON.stringify(usuarios));
+      localStorage.setItem('usuarioLogado', email);
+      localStorage.setItem('modoJogo', modoSelecionado);
+      window.location.href = 'jogo.html';
+    }
+  </script>
+</body>
+</html>
