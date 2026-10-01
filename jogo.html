@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fazenda Feliz - Jogo</title>
+  <style>
+    :root {
+      --verde-escuro: #1e5b2d;
+      --verde: #3f8d42;
+      --verde-claro: #d9f6cf;
+      --solo: #b6804d;
+      --terra: #8a6233;
+      --amarelo: #ffd456;
+      --laranja: #ff9f43;
+      --branco: #ffffff;
+      --texto: #1f2d1b;
+      --cinza: #e9efe8;
+      --sombra: rgba(0,0,0,0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #8ed8ff 0%, #d9f7ff 27%, #baf1a7 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--texto);
+    }
+
+    .sky {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 280px;
+      background: linear-gradient(180deg, #9bdcff 0%, #dff6ff 60%, rgba(255,255,255,0.4) 100%);
+      z-index: 0;
+    }
+
+    .sun {
+      position: absolute;
+      width: 92px;
+      height: 92px;
+      right: 80px;
+      top: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7b3 0%, #ffd95d 45%, #ffc726 100%);
+      box-shadow: 0 0 45px rgba(255, 210, 70, 0.8);
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.7);
+      border-radius: 48px;
+      filter: blur(0.2px);
+      animation: drift 26s linear infinite;
+    }
+
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+    }
+
+    .cloud.one {
+      width: 120px;
+      height: 38px;
+      top: 70px;
+      left: 10%;
+    }
+    .cloud.one::before { width: 52px; height: 52px; left: 10px; top: -18px; }
+    .cloud.one::after { width: 58px; height: 48px; right: 14px; top: -18px; }
+
+    .cloud.two {
+      width: 90px;
+      height: 32px;
+      top: 115px;
+      left: 62%;
+      animation-duration: 30s;
+    }
+    .cloud.two::before { width: 40px; height: 40px; left: 12px; top: -16px; }
+    .cloud.two::after { width: 46px; height: 36px; right: 10px; top: -12px; }
+
+    @keyframes drift {
+      0% { transform: translateX(-12vw); }
+      100% { transform: translateX(115vw); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 20px auto 60px;
+      padding: 0 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 18px;
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.1);
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      font-size: clamp(1.5rem, 2vw, 2.1rem);
+      margin: 0;
+      color: var(--verde-escuro);
+      font-weight: 800;
+    }
+
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: linear-gradient(180deg, var(--verde), var(--verde-escuro));
+      color: var(--branco);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(31,93,44,0.2);
+    }
+
+    .pill.gold {
+      background: linear-gradient(180deg, #ffd96a, #f4b535);
+      color: #3f2900;
+    }
+
+    .pill strong { font-size: 1.1rem; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      border: none;
+      background: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--texto);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(180deg, var(--verde), var(--verde-escuro));
+      color: var(--branco);
+    }
+
+    .panel {
+      display: none;
+      background: rgba(255,255,255,0.9);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 14px 24px rgba(0,0,0,0.1);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .info {
+      background: linear-gradient(180deg, #e9f9e9, #edf7da);
+      border-left: 5px solid var(--verde);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 700;
+      color: var(--verde-escuro);
+      margin-bottom: 18px;
+    }
+
+    .farm {
+      background: linear-gradient(180deg, #91cf6e 0%, #b0d95c 18%, #8ecb5f 100%);
+      border-radius: 18px;
+      border: 5px solid #8a5a2b;
+      box-shadow: inset 0 5px 18px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.08);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .fence {
+      width: 100%;
+      height: 16px;
+      border-radius: 8px;
+      background: repeating-linear-gradient(
+        90deg,
+        #935c2b 0 18px,
+        #a86e36 18px 27px,
+        #8a5426 27px 42px
+      );
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
+      gap: 18px;
+    }
+
+    .plot {
+      position: relative;
+      min-height: 170px;
+      border-radius: 18px;
+      border: 4px solid #5a3f24;
+      background: linear-gradient(180deg, #a9784d 0%, #8a6233 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .plot:hover { transform: translateY(-2px); }
+
+    .plot.empty {
+      background: linear-gradient(180deg, #b4865c 0%, #8b6437 100%);
+    }
+
+    .plot.planted {
+      background: linear-gradient(180deg, #5a8e38 0%, #547c2f 100%);
+    }
+
+    .plot.ready {
+      background: linear-gradient(180deg, #ffc859 0%, #f3a52a 100%);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 0 22px rgba(255, 204, 80, 0.7);
+    }
+
+    .plot::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.05),
+        rgba(255,255,255,0.05) 8px,
+        transparent 8px,
+        transparent 16px
+      );
+      pointer-events: none;
+    }
+
+    .plot-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: white;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.35);
+    }
+
+    .plot-emoji {
+      display: block;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      margin-bottom: 6px;
+    }
+
+    .plant-tools {
+      background: linear-gradient(180deg, #f1faee, #e6f5d6);
+      border: 2px solid #b4d89d;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .tool-title {
+      font-weight: 800;
+      color: var(--verde-escuro);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .plant-card {
+      background: white;
+      border: 2px solid #dfe9dd;
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .plant-card.selected {
+      border-color: var(--verde);
+      background: #edf9ed;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(63,143,63,0.15);
+    }
+
+    .plant-card .emoji { font-size: 2rem; }
+    .plant-card .name { font-weight: 800; color: var(--verde-escuro); margin: 6px 0 4px; }
+    .plant-card .meta { color: #556; font-size: 0.8rem; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 10px;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .action-btn.primary { background: linear-gradient(180deg, var(--verde), var(--verde-escuro)); }
+    .action-btn.secondary { background: linear-gradient(180deg, #ffb85c, #f09b2d); }
+    .action-btn.danger { background: linear-gradient(180deg, #ee6f6b, #cf4b44); }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sky">
+    <div class="sun"></div>
+    <div class="cloud one"></div>
+    <div class="cloud two"></div>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <h1 class="title">🌾 Fazenda Feliz</h1>
+      <div class="stats">
+        <div class="pill"><span>💰 </span><strong id="moedas">100</strong></div>
+        <div class="pill"><span>⭐ </span><strong id="xp">0</strong> XP</div>
+        <div class="pill gold"><span>⏫ </span><strong id="nivel">1</strong></div>
+        <button class="action-btn danger" onclick="logout()" style="padding:10px 14px; min-width:100px;">Sair</button>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="fazenda">🌿 Fazenda</button>
+      <button class="tab-btn" data-tab="loja">🛒 Loja</button>
+      <button class="tab-btn" data-tab="animais">🐄 Animais</button>
+      <button class="tab-btn" data-tab="progresso">📈 Progresso</button>
+    </nav>
+
+    <main>
+      <section id="fazenda" class="panel active">
+        <div class="info">🌟 Plante, cuide e colha para ganhar moedas.</div>
+
+        <div class="farm">
+          <div class="fence"></div>
+          <div class="grid">
+            <div class="plot empty" data-id="1" onclick="clicarTerreno(1)"><div class="plot-inner"><span class="plot-emoji">🌱</span><div>Terreno 1</div></div></div>
+            <div class="plot empty" data-id="2" onclick="clicarTerreno(2)"><div class="plot-inner"><span class="plot-emoji">🌱</span><div>Terreno 2</div></div></div>
+            <div class="plot empty" data-id="3" onclick="clicarTerreno(3)"><div class="plot-inner"><span class="plot-emoji">🌱</span><div>Terreno 3</div></div></div>
+            <div class="plot empty" data-id="4" onclick="clicarTerreno(4)"><div class="plot-inner"><span class="plot-emoji">🌱</span><div>Terreno 4</div></div></div>
+          </div>
+          <div class="fence" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="plant-tools">
+          <div class="tool-title">🌿 Escolha o cultivo</div>
+          <div class="cards">
+            <div class="plant-card selected" data-plant="tomate" onclick="selecionarPlanta('tomate')">
+              <div class="emoji">🍅</div>
+              <div class="name">Tomate</div>
+              <div class="meta">18 moedas • 5s</div>
+            </div>
+            <div class="plant-card" data-plant="morango" onclick="selecionarPlanta('morango')">
+              <div class="emoji">🍓</div>
+              <div class="name">Morango</div>
+              <div class="meta">95 moedas • 15s</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="action-btn secondary" onclick="assistirAnuncio()">📺 +20</button>
+          <button class="action-btn primary" onclick="acelerarTudo()">⚡ Acelerar</button>
+          <button class="action-btn danger" onclick="coletarTudo()">🎯 Coletar</button>
+        </div>
+      </section>
+
+      <section id="loja" class="panel">
+        <div class="info">🛒 Loja e upgrades em construção.</div>
+      </section>
+
+      <section id="animais" class="panel">
+        <div class="info">🐄 Animais e produção em construção.</div>
+      </section>
+
+      <section id="progresso" class="panel">
+        <div class="info">📈 Seu progresso aparecerá aqui.</div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const plantas = {
+      tomate: { emoji: '🍅', valor: 18, tempo: 5, xp: 5 },
+      morango: { emoji: '🍓', valor: 95, tempo: 15, xp: 15 }
+    };
+
+    const state = {
+      usuario: null,
+      moedas: 100,
+      nivel: 1,
+      xp: 0,
+      plantaAtual: 'tomate',
+      terrenos: {
+        1: { estado: 'vazio', planta: null, tempo: 0 },
+        2: { estado: 'vazio', planta: null, tempo: 0 },
+        3: { estado: 'vazio', planta: null, tempo: 0 },
+        4: { estado: 'vazio', planta: null, tempo: 0 }
+      }
+    };
+
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('active', panel.id === btn.dataset.tab));
+      });
+    });
+
+    function carregarUsuario() {
+      const email = localStorage.getItem('usuarioLogado');
+      if (!email) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const usuarios = JSON.parse(localStorage.getItem('fazendaUsuarios') || '{}');
+      const usuario = usuarios[email];
+      if (!usuario) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      state.usuario = email;
+      state.moedas = usuario.moedas || 100;
+      state.nivel = usuario.nivel || 1;
+      state.xp = usuario.xp || 0;
+      state.terrenos = usuario.terrenos || state.terrenos;
+      atualizarUI();
+      atualizarTerrenos();
+    }
+
+    function selecionarPlanta(planta) {
+      state.plantaAtual = planta;
+      document.querySelectorAll('.plant-card').forEach((card) => card.classList.toggle('selected', card.dataset.plant === planta));
+    }
+
+    function cliclarTerreno(id) {
+      const terreno = state.terrenos[id];
+      const planta = plantas[state.plantaAtual];
+
+      if (terreno.estado === 'vazio') {
+        if (state.moedas < planta.valor) {
+          alert('💸 Moedas insuficientes.');
+          return;
+        }
+
+        state.moedas -= planta.valor;
+        terreno.estado = 'plantado';
+        terreno.planta = state.plantaAtual;
+        terreno.tempo = planta.tempo;
+        atualizarUI();
+        atualizarTerrenos();
+
+        const timer = setInterval(() => {
+          if (state.terrenos[id].estado !== 'plantado') {
+            clearInterval(timer);
+            return;
+          }
+
+          state.terrenos[id].tempo -= 1;
+          if (state.terrenos[id].tempo <= 0) {
+            state.terrenos[id].estado = 'pronto';
+            clearInterval(timer);
+          }
+          atualizarTerrenos();
+        }, 1000);
+
+        return;
+      }
+
+      if (terreno.estado === 'pronto') {
+        const plantaSelecionada = plantas[terreno.planta];
+        state.moedas += plantaSelecionada.valor;
+        ganharXP(plantaSelecionada.xp);
+        terreno.estado = 'vazio';
+        terreno.planta = null;
+        terreno.tempo = 0;
+        atualizarUI();
+        atualizarTerrenos();
+      }
+    }
+
+    function ganharXP(qtd) {
+      state.xp += qtd;
+      while (state.xp >= state.nivel * 100) {
+        state.xp -= state.nivel * 100;
+        state.nivel += 1;
+      }
+      atualizarUI();
+    }
+
+    function atualizarUI() {
+      document.getElementById('moedas').textContent = state.moedas;
+      document.getElementById('xp').textContent = state.xp;
+      document.getElementById('nivel').textContent = state.nivel;
+    }
+
+    function atualizarTerrenos() {
+      for (let i = 1; i <= 4; i++) {
+        const plot = document.querySelector(`.plot[data-id='${i}']`);
+        const terreno = state.terrenos[i];
+
+        plot.classList.remove('empty', 'planted', 'ready');
+
+        if (terreno.estado === 'vazio') {
+          plot.classList.add('empty');
+          plot.innerHTML = '<div class="plot-inner"><span class="plot-emoji">🌱</span><div>Terreno ' + i + '</div></div>';
+        } else if (terreno.estado === 'plantado') {
+          const planta = plantas[terreno.planta];
+          plot.classList.add('planted');
+          plot.innerHTML = '<div class="plot-inner"><span class="plot-emoji">' + planta.emoji + '</span><div>' + terreno.tempo + 's</div></div>';
+        } else if (terreno.estado === 'pronto') {
+          plot.classList.add('ready');
+          const planta = plantas[terreno.planta];
+          plot.innerHTML = '<div class="plot-inner"><span class="plot-emoji">✅</span><div>Colher</div></div>';
+        }
+      }
+    }
+
+    function assistirAnuncio() {
+      state.moedas += 20;
+      atualizarUI();
+      salvar();
+    }
+
+    function acelerarTudo() {
+      for (const key in state.terrenos) {
+        if (state.terrenos[key].estado === 'plantado') {
+          state.terrenos[key].estado = 'pronto';
+          state.terrenos[key].tempo = 0;
+        }
+      }
+      atualizarTerrenos();
+      salvar();
+    }
+
+    function coletarTudo() {
+      for (const key in state.terrenos) {
+        const terreno = state.terrenos[key];
+        if (terreno.estado === 'pronto' && terreno.planta) {
+          const planta = plantas[terreno.planta];
+          state.moedas += planta.valor;
+          ganharXP(planta.xp);
+          terreno.estado = 'vazio';
+          terreno.planta = null;
+          terreno.tempo = 0;
+        }
+      }
+      atualizarUI();
+      atualizarTerrenos();
+      salvar();
+    }
+
+    function salvar() {
+      if (!state.usuario) return;
+      const usuarios = JSON.parse(localStorage.getItem('fazendaUsuarios') || '{}');
+      usuarios[state.usuario] = {
+        ...usuarios[state.usuario],
+        moedas: state.moedas,
+        nivel: state.nivel,
+        xp: state.xp,
+        terrenos: state.terrenos
+      };
+      localStorage.setItem('fazendaUsuarios', JSON.stringify(usuarios));
+    }
+
+    function logout() {
+      salvar();
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = 'index.html';
+    }
+
+    window.addEventListener('load', carregarUsuario);
+    setInterval(salvar, 15000);
+  </script>
+</body>
+</html>
